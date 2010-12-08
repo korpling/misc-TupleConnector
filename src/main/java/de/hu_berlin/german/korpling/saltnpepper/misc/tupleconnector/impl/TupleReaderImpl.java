@@ -1,0 +1,148 @@
+package de.hu_berlin.german.korpling.saltnpepper.misc.tupleconnector.impl;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.Vector;
+
+import de.hu_berlin.german.korpling.saltnpepper.misc.tupleconnector.TupleReader;
+
+public class TupleReaderImpl implements TupleReader
+{
+	/**
+	 * input file 
+	 */
+	private File inFile= null;
+	
+	/**
+	 * seperator which departs attributes
+	 */
+	private String seperator= "\t";
+	
+	/**
+	 * encoding in which file is written
+	 */
+	private String encoding= null;
+	
+	/**
+	 * collection of tuples, tuples are a collection of attributes
+	 */
+	Collection<Collection<String>> tuples= null;
+	
+	/**
+	 * stores current position of asked tuple
+	 */
+	int tuplePtr= 0;
+	
+	@Override
+	public void setFile(File inFile) 
+	{
+		if (inFile== null) throw new NullPointerException("Error(TupleReader): the given file-object is empty.");
+		if (!inFile.exists()) throw new NullPointerException("Error(TupleReader): the given file does not exists: "+inFile+".");
+		if (!inFile.isFile()) throw new NullPointerException("Error(TupleReader): the given file-object is not a file: "+inFile+".");
+		this.inFile= inFile;
+	}
+	
+	@Override
+	public File getFile()
+	{
+		return(this.inFile);
+	}
+
+	@Override
+	public void setSeperator(String seperator) 
+	{
+		if ((seperator== null) || (seperator.equalsIgnoreCase(""))) 
+			throw new NullPointerException("Error(TupleReader): the given seperator is empty.");
+		this.seperator= seperator;
+	}
+	
+	@Override
+	public String getSeperator() 
+	{
+		return(this.seperator);
+	}
+	
+	@Override
+	public void setEncoding(String encoding) 
+	{
+		this.encoding= encoding;
+	}
+	
+	@Override
+	public String getEncoding() 
+	{
+		return(this.encoding);
+	}
+	
+	public void readFile() throws IOException
+	{
+		if (this.inFile== null) 
+			throw new NullPointerException("Error(TupleReader): Cannot read from empty file.");
+		BufferedReader inReader = new BufferedReader(new InputStreamReader(new FileInputStream(this.inFile), "UTF8"));
+		Collection<String> atts= null;
+		String input = "";
+		tuples= new Vector<Collection<String>>();
+		while((input = inReader.readLine()) != null) 
+		{
+			atts= new Vector<String>();
+			if (input!= null)
+			{	
+				String[] attStr= input.split(this.seperator);
+				for (String att: attStr)
+					atts.add(att);
+				tuples.add(atts);
+			}
+		}
+		inReader.close();
+	}
+	
+	/**
+	 * Returns a new tuple. If no more tuples exists, return value is null.
+	 */
+	public Collection<String> getTuple() throws IOException
+	{
+		if (tuples== null)
+			this.readFile();
+		if (this.tuplePtr >= tuples.size())
+			return(null);
+		Collection<String> tuple= (Collection<String>)((Vector<Collection<String>>) this.tuples).get(this.tuplePtr);
+		this.tuplePtr++;
+		return(tuple);
+	}
+
+	@Override
+	public Integer getNumOfTuples() 
+	{
+		Integer retVal= 0;
+		if (tuples!= null)
+			retVal= tuples.size();
+		return(retVal);	
+	}
+
+	@Override
+	public Collection<String> getTuple(Integer index) throws IOException 
+	{
+		Collection<String> tuple= null;
+		if (tuples!= null)
+		{
+			tuple= ((Vector<Collection<String>>)tuples).get(index);
+		}
+		return(tuple);
+	}
+
+	@Override
+	public void restart() 
+	{
+		this.tuplePtr= 0;
+	}
+
+	@Override
+	public Integer size() 
+	{
+		return(this.getNumOfTuples());
+	}
+}
