@@ -9,7 +9,7 @@ Bundle-Name: Unnamed - de.hu_berlin.german.korpling.saltnpepper.misc:T
 Created-By: Apache Maven Bundle Plugin
 Bundle-Version: 1.0.0
 Build-Jdk: 1.6.0_21
-Bnd-LastModified: 1291737402475
+Bnd-LastModified: 1295968454181
 Bundle-ManifestVersion: 2
 Bundle-Activator: de.hu_berlin.german.korpling.saltnpepper.misc.tuplec
  onnector.Activator
