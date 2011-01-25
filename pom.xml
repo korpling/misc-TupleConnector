@@ -81,5 +81,6 @@
               </configuration>
 	</plugin>      
       </plugins>
+      <finalName>${project.groupId}.${project.artifactId}_${project.version}</finalName>
   </build>
 </project>
