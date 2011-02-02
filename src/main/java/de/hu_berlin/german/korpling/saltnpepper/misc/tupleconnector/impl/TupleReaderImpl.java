@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Vector;
+import java.util.ArrayList;
 
 import de.hu_berlin.german.korpling.saltnpepper.misc.tupleconnector.TupleReader;
 
@@ -36,6 +37,16 @@ public class TupleReaderImpl implements TupleReader
 	 * stores current position of asked tuple
 	 */
 	int tuplePtr= 0;
+	
+	/**
+	 * stores the overall number of characters read 
+	 */
+	private Integer charCount = 0;
+	
+	/**
+	 * stores the number of characters read per field index 
+	 */
+	private ArrayList<Integer> charCountList = new ArrayList<Integer>(); 
 	
 	@Override
 	public void setFile(File inFile) 
@@ -86,14 +97,28 @@ public class TupleReaderImpl implements TupleReader
 		Collection<String> atts= null;
 		String input = "";
 		tuples= new Vector<Collection<String>>();
+		Integer fieldIndex = 0;
+		charCount = 0;
+		charCountList.clear();
 		while((input = inReader.readLine()) != null) 
 		{
 			atts= new Vector<String>();
 			if (input!= null)
 			{	
 				String[] attStr= input.split(this.seperator);
-				for (String att: attStr)
+				fieldIndex = 0;
+				for (String att: attStr) {
 					atts.add(att);
+					try {
+						charCountList.set(fieldIndex,charCountList.get(fieldIndex)+att.length());
+					} 
+					catch (IndexOutOfBoundsException e) {
+						charCountList.add(att.length());						
+					}
+					charCount += att.length();
+					fieldIndex++;
+				}
+					
 				tuples.add(atts);
 			}
 		}
@@ -144,5 +169,18 @@ public class TupleReaderImpl implements TupleReader
 	public Integer size() 
 	{
 		return(this.getNumOfTuples());
+	}
+
+	@Override
+	public Integer characterSize() {
+		return charCount;
+	}
+
+	@Override
+	/**
+	 * @throws IndexOutOfBoundsException
+	 */
+	public Integer characterSize(Integer fieldIndex) {
+		return charCountList.get(fieldIndex);
 	}
 }

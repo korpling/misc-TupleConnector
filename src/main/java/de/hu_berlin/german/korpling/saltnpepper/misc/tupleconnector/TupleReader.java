@@ -85,6 +85,21 @@ public interface TupleReader
 	 * @return
 	 */
 	public Integer size();
+
+	/**
+	 * Returns the number of characters contained in this tuple reader.
+	 * @return number of characters
+	 * @author hildebax
+	 */
+	public Integer characterSize();
+	
+	/**
+	 * Returns the number of characters contained in the field given by <code>fieldIndex</code> of this tuple reader.
+	 * @param fieldIndex the index of the field
+	 * @return number of characters in the field 
+	 * @author hildebax
+	 */
+	public Integer characterSize(Integer fieldIndex);
 	
 	/**
 	 * Reads the given file and creates an internal list of read tuples.
