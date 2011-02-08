@@ -52,6 +52,12 @@ public interface TupleReader
 	public String getEncoding();
 	
 	/**
+	 * Returns all currently read tuples.
+	 * @return all read tuples.
+	 */
+	public Collection<Collection<String>> getTuples();
+	
+	/**
 	 * Returns a the tuple which is next in datasource. Datasource will be read one time
 	 * and stored internal. a pointer is set to data and incremented when this method
 	 * is called.

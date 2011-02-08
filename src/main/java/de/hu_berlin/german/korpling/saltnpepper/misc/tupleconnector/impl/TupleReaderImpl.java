@@ -148,6 +148,15 @@ public class TupleReaderImpl implements TupleReader
 		return(retVal);	
 	}
 
+	/**
+	 * Returns all currently read tuples.
+	 * @return all read tuples.
+	 */
+	public Collection<Collection<String>> getTuples()
+	{
+		return(this.tuples);
+	}
+	
 	@Override
 	public Collection<String> getTuple(Integer index) throws IOException 
 	{
