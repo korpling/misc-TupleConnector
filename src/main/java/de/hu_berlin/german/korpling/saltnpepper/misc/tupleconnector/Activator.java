@@ -33,7 +33,6 @@ public class Activator implements BundleActivator {
 	    * @param bundleContext - the framework context for the bundle.
 	  **/
 	  public void start(BundleContext bundleContext) {
-	    System.out.println("TupleConnector Hello World new new");
 //	    logger.info("TupleConnector  log4j: Hello World");
 	  }
 
@@ -42,7 +41,6 @@ public class Activator implements BundleActivator {
 	    * @param bundleContext - the framework context for the bundle.
 	  **/
 	  public void stop(BundleContext bundleContext) {
-	    System.out.println("TupleConnector  Goodbye World");
 	  }
 
 }
