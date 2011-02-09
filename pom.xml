@@ -102,6 +102,7 @@
                       <Bundle-Version>${project.version}</Bundle-Version>
                       <Bundle-Activator>de.hu_berlin.german.korpling.saltnpepper.misc.tupleconnector.Activator</Bundle-Activator>
                       <Export-Package>de.hu_berlin.german.korpling.saltnpepper.misc.tupleconnector; de.hu_berlin.german.korpling.saltnpepper.misc.tupleconnector.exceptions</Export-Package>
+                      <Include-Resource>{maven-resources}, LICENSE, NOTICE</Include-Resource>
                   </instructions>
               </configuration>
 	</plugin>      
