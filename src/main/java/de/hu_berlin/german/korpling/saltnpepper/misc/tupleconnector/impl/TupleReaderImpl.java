@@ -83,7 +83,7 @@ public class TupleReaderImpl implements TupleReader
 	@Override
 	public void setSeperator(String seperator) 
 	{
-		if ((seperator== null) || (seperator.equalsIgnoreCase(""))) 
+		if ((seperator== null) || (seperator.equals(""))) 
 			throw new NullPointerException("Error(TupleReader): the given seperator is empty.");
 		this.seperator= seperator;
 	}
