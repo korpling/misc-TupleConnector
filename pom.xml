@@ -14,7 +14,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <component.descriptor.name>serviceComponents.xml</component.descriptor.name>
-    <bundle.file>${project.groupId}.misc.${project.artifactId}_${project.version}.jar</bundle.file>
+    <bundle.file>${project.groupId}.${project.artifactId}_${project.version}.jar</bundle.file>
     <assemblies.name>src/assemble/assemblies.xml</assemblies.name>
     <license.file>${basedir}/LICENSE</license.file>
     <notice.file>${basedir}/NOTICE</notice.file>
@@ -91,7 +91,7 @@
             <descriptor>${assemblies.name}</descriptor>
           </descriptors>
           <appendAssemblyId>false</appendAssemblyId>
-          <finalName>${project.groupId}.${project.artifactId}_${project.version}</finalName>
+          <finalName>${project.groupId}.misc.${project.artifactId}_${project.version}</finalName>
           <outputDirectory>target/distribution</outputDirectory>
           <workDirectory>target/assembly/work</workDirectory>
         </configuration>
