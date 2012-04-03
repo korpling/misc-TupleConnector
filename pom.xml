@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.hu_berlin.german.korpling.saltnpepper</groupId>
   <artifactId>misc-TupleConnector</artifactId>
-  <version>1.1.177</version>
+  <version>1.1.178-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <licenses>
     <license>
@@ -20,7 +20,7 @@
     <notice.file>${basedir}/NOTICE</notice.file>
   </properties>
   <scm>
-    <developerConnection>scm:svn:https://korpling.german.hu-berlin.de/svn/saltnpepper/Misc/TupleConnector/tags/misc-TupleConnector-1.1.177</developerConnection>
+    <developerConnection>scm:svn:https://korpling.german.hu-berlin.de/svn/saltnpepper/Misc/TupleConnector/trunk</developerConnection>
   </scm>
   <distributionManagement>
     <repository>
