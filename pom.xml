@@ -24,17 +24,25 @@
   </scm>
   <distributionManagement>
     <repository>
-      <id>SaltNPepper Repository</id>
-      <name>SaltNPepper Repository</name>
-      <url>file:///home/annis/public_html/maven2/saltnpepper</url>
+      <id>korpling</id>
+      <name>korpling maven repo</name>
+      <url>file:///srv/www/maven2/</url>
+      <!-- <url>scpexe://korpling.german.hu-berlin.de/srv/www/maven2/</url>-->
     </repository>
   </distributionManagement>
-  <repositories>
-    <repository>
-      <id>SaltNPepper Repository</id>
-      <url>https://korpling.german.hu-berlin.de/~annis/maven2/saltnpepper/</url>
-    </repository>
-  </repositories>
+  
+  <ciManagement>
+  	<system>Jenkins</system>
+  	<url>https://korpling.german.hu-berlin.de/jenkins/</url>
+  </ciManagement>
+  
+<repositories>
+  <repository>
+    <id>korpling</id>
+    <name>korpling maven repo</name>
+    <url>http://korpling.german.hu-berlin.de/maven2</url>
+  </repository>
+</repositories>
   <dependencies>
     <dependency>
       <groupId>org.apache.felix</groupId>
