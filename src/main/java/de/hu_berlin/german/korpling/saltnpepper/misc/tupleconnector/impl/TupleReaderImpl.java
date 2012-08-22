@@ -45,6 +45,9 @@ public class TupleReaderImpl implements TupleReader
 	 */
 	private String encoding= null;
 	
+	//BOM character
+	private static final Character utf8BOM = new Character((char)0xFEFF);
+	
 	/**
 	 * collection of tuples, tuples are a collection of attributes
 	 */
@@ -117,8 +120,14 @@ public class TupleReaderImpl implements TupleReader
 		Integer fieldIndex = 0;
 		charCount = 0;
 		charCountList.clear();
+		int fileLineCount = 0;
 		while((input = inReader.readLine()) != null) 
 		{
+			fileLineCount++;
+			//delete BOM if exists
+			if ((fileLineCount==1)&&(input.startsWith(utf8BOM.toString())))
+				input = input.substring(utf8BOM.toString().length());
+			
 			atts= new Vector<String>();
 			if (input!= null)
 			{	
