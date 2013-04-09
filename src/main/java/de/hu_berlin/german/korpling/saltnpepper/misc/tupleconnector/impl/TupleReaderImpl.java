@@ -72,7 +72,7 @@ public class TupleReaderImpl implements TupleReader
 	public void setFile(File inFile) 
 	{
 		if (inFile== null) throw new NullPointerException("Error(TupleReader): the given file-object is empty.");
-		if (!inFile.exists()) throw new NullPointerException("Error(TupleReader): the given file does not exists: "+inFile+".");
+		if (!inFile.exists()) throw new NullPointerException("Error(TupleReader): the given file does not exist: "+inFile+".");
 		if (!inFile.isFile()) throw new NullPointerException("Error(TupleReader): the given file-object is not a file: "+inFile+".");
 		this.inFile= inFile;
 	}
