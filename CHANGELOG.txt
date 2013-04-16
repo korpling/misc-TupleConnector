@@ -1,0 +1,10 @@
+***********************************************************************************
+***								CHANGELOG for TupleConnector					***
+***********************************************************************************
+*	groupId:		de.hu_berlin.german.korpling.saltnpepper					  *
+*	artifactId:		misc-TupleConnector									          *
+***********************************************************************************
+
+Version 1.1.3
+=============
+	* + removed Activator, now only startable via declarative services.
