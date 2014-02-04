@@ -24,6 +24,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 
@@ -37,6 +38,11 @@ public class TupleWriterImpl implements TupleWriter
 	private Logger logger= Logger.getLogger(TupleWriterImpl.class);
 	private String encoding= "UTF-8";
 	private String sperator= "\t";
+	
+	private boolean escapeCharacters = false;
+	
+	private Hashtable<Character,String> charEscapeTable;
+	
 	/**
 	 * output file 
 	 */
@@ -53,6 +59,16 @@ public class TupleWriterImpl implements TupleWriter
 	 */
 	public TupleWriterImpl()
 	{
+		charEscapeTable = new Hashtable<Character, String>();
+		/**
+		 * Standard escaping
+		 * \t \n \r \ '
+		 */
+		charEscapeTable.put('\t', "TAB");
+		charEscapeTable.put('\n', "NEWLINE");
+		charEscapeTable.put('\r', "RETURN");
+		charEscapeTable.put('\\', "\\\\");
+		charEscapeTable.put('\'', "\\'");
 	}
 	
 	@Override
@@ -176,7 +192,29 @@ public class TupleWriterImpl implements TupleWriter
 				int i= 0;
 				for (String att: tuple)
 				{
-					tuples.append(att);
+					
+					if (this.escapeCharacters)
+					{ // if escaping should be done
+						StringBuffer escaped = new StringBuffer();
+						for (char chr : att.toCharArray())
+						{ // for every char in the atring
+							String escapeString = this.charEscapeTable.get(chr);
+							if (escapeString != null)
+							{ // if there is some escape sequence
+								escaped.append(escapeString);
+							} 
+							else 
+							{
+								escaped.append(chr);
+							}
+						}
+						tuples.append(escaped.toString());
+					} 
+					else 
+					{ // if NO escaping should be done
+						tuples.append(att);
+					}
+					
 					i++;
 					if (i < tuple.size())
 						tuples.append(this.getSeperator());
@@ -202,6 +240,23 @@ public class TupleWriterImpl implements TupleWriter
 	public void setEncoding(String encoding) 
 	{
 		this.encoding= encoding;
+	}
+	
+	@Override
+	public void setEscaping(boolean escape){
+		this.escapeCharacters = escape;
+	}
+	
+	@Override
+	public void setEscapeTable(Hashtable<Character,String> escapeTable){
+		if (escapeTable == null)
+			throw new TupleWriterException("Error(TupleWriter): The given escape table object is null.");
+		this.charEscapeTable = escapeTable;
+	}
+	
+	@Override
+	public Hashtable<Character,String> getEscapeTable(){
+		return this.charEscapeTable;
 	}
 	
 	@Override
