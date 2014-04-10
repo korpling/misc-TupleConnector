@@ -23,10 +23,13 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
@@ -36,6 +39,9 @@ import de.hu_berlin.german.korpling.saltnpepper.misc.tupleconnector.exceptions.T
 public class TupleWriterImpl implements TupleWriter 
 {
 	private Logger logger= Logger.getLogger(TupleWriterImpl.class);
+	
+	private final Lock writerLock = new ReentrantLock();
+	
 	private String encoding= "UTF-8";
 	private String sperator= "\t";
 	
@@ -85,7 +91,10 @@ public class TupleWriterImpl implements TupleWriter
 	/**
 	 * relates tuple-Ids to Collections of tuples
 	 */
-	private volatile Map<Long, Collection<Collection<String>>> tupleMap= new HashMap<Long, Collection<Collection<String>>>(); 
+	private volatile Map<Long, Collection<Collection<String>>> tupleMap= 
+			Collections.synchronizedMap(
+					new HashMap<Long, Collection<Collection<String>>>()
+			); 
 	
 	/**
 	 * Returns a new TA-Id
@@ -177,12 +186,14 @@ public class TupleWriterImpl implements TupleWriter
 	}
 	
 	private void flush(Long TAId) throws FileNotFoundException
-	{				
+	{	
 		if (logger!= null) 
 			logger.debug("flushing all tuples of tupleWriter '"+this.getFile().getName()+"' which belong to TA with id: "+ TAId);
 		if (outFile== null) throw new FileNotFoundException("Error(TupleWriter): The datasource is empty.");
 		try 
 		{
+			
+			writerLock.lock();
 			
 			StringBuffer tuples= new StringBuffer();
 			//zu schreibende tuple ermitteln
@@ -232,6 +243,9 @@ public class TupleWriterImpl implements TupleWriter
 			{ throw new TupleWriterException("Cannot commit ta, because writing to file does not worked. ", e);}
 		catch (UnsupportedEncodingException e)
 			{ throw new TupleWriterException("Cannot commit ta, because writing to file does not worked. ", e); }
+		finally	{
+			writerLock.unlock();
+		}
 	}
 	
 // ----------------------------- End TA-Management -----------------------------
