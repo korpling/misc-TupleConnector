@@ -203,8 +203,8 @@ public class TupleWriterImpl implements TupleWriter
 				int i= 0;
 				for (String att: tuple)
 				{
-					
-					if (this.escapeCharacters)
+					// don't escape if attribute is NULL
+					if (this.escapeCharacters && att != null)
 					{ // if escaping should be done
 						StringBuffer escaped = new StringBuffer();
 						for (char chr : att.toCharArray())
