@@ -20,9 +20,10 @@ package de.hu_berlin.german.korpling.saltnpepper.misc.tupleconnector;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collection;
+import java.util.Hashtable;
 
 /**
- * This interface provides methodes to store tuples in a stream, for example a file 
+ * This interface provides methods to store tuples in a stream, for example a file 
  * stream. Although it provides a transactional treatment for writing tuples.
  *  
  * @author Florian Zipser
@@ -35,6 +36,24 @@ public interface TupleWriter
 	 * @param encoding in which data shall be stored
 	 */
 	public void setEncoding(String encoding);
+	
+	/**
+	 * Sets an internal flag which specifies whether special chars should be escaped
+	 * @param escape true, if special chars should be escaped and false, if not.
+	 */
+	public void setEscaping(boolean escape);
+	
+	/**
+	 * This method sets the table of escape sequences
+	 * @param escapeTable the table
+	 */
+	public void setEscapeTable(Hashtable<Character,String> escapeTable);
+	
+	/**
+	 * This method returns the current escape table for this TupleWriter
+	 * @return the current escape table
+	 */
+	public Hashtable<Character,String> getEscapeTable();
 	
 	/**
 	 * Returns the encoding in which data shall be stored.
