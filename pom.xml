@@ -12,6 +12,7 @@
     </license>
   </licenses>
   <properties>
+	<maven-release-plugin.version>2.1</maven-release-plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <component.descriptor.name>serviceComponents.xml</component.descriptor.name>
     <bundle.file>${project.groupId}.${project.artifactId}_${project.version}.jar</bundle.file>
