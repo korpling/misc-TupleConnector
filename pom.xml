@@ -20,7 +20,9 @@
     <notice.file>${basedir}/NOTICE</notice.file>
   </properties>
   <scm>
-    <developerConnection>scm:svn:https://korpling.german.hu-berlin.de/svn/saltnpepper/Misc/TupleConnector/trunk</developerConnection>
+  	<connection>scm:git:git://github.com/korpling/misc-TupleConnector.git</connection>
+    <developerConnection>scm:git:git@github.com:korpling/misc-TupleConnector.git</developerConnection>
+    <url>https://github.com/korpling/misc-TupleConnector</url>
   </scm>
   <distributionManagement>
     <repository>
@@ -30,7 +32,10 @@
       <!-- <url>scpexe://korpling.german.hu-berlin.de/srv/www/maven2/</url>-->
     </repository>
   </distributionManagement>
-  
+  <issueManagement>
+  	<system>GitHub</system>
+  	<url>https://github.com/korpling/misc-TupleConnector/issues</url>
+  </issueManagement>
   <ciManagement>
   	<system>Jenkins</system>
   	<url>https://korpling.german.hu-berlin.de/jenkins/</url>
@@ -71,11 +76,19 @@
     	<!-- start: Plugin for automatic releasing -->
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.1</version>
+        <version>${maven-release-plugin.version}</version>
+        <executions>
+        	<execution>
+        		<id>default</id>
+        		<goals>
+        			<goal>perform</goal>        			
+        		</goals>
+        		<configuration>
+        			<pomFileName>misc-TupleConnector/pom.xml</pomFileName>
+        		</configuration>
+        	</execution>
+        </executions>
         <configuration>
-          <tagBase>
-           https://korpling.german.hu-berlin.de/svn/saltnpepper/Misc/TupleConnector/tags/
-          </tagBase>
           <releaseProfiles>release</releaseProfiles>
           <goals>package assembly:single deploy</goals>
         </configuration>
