@@ -21,12 +21,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,8 +30,14 @@ import org.apache.log4j.Logger;
 
 import de.hu_berlin.german.korpling.saltnpepper.misc.tupleconnector.TupleWriter;
 import de.hu_berlin.german.korpling.saltnpepper.misc.tupleconnector.exceptions.TupleWriterException;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
 
 /**
  * An implementation of a tuple writer that uses temoporary files instead
@@ -70,8 +72,6 @@ public class TmpFileTupleWriterImpl implements TupleWriter
 	 */
 	private Collection<String> attNames= null;
 	
-	private PrintStream oStream= null;
-
 	/**
 	 * Constructor
 	 */
@@ -103,10 +103,8 @@ public class TmpFileTupleWriterImpl implements TupleWriter
 	/**
 	 * relates tuple-Ids to Collections of tuples
 	 */
-	private volatile Map<Long, Collection<Collection<String>>> tupleMap= 
-			Collections.synchronizedMap(
-					new HashMap<Long, Collection<Collection<String>>>()
-			); 
+  private final ConcurrentHashMap<Long, TransactionFile> transactionToTmpStream 
+    = new ConcurrentHashMap<>();
 	
 	/**
 	 * Returns a new TA-Id
@@ -123,55 +121,44 @@ public class TmpFileTupleWriterImpl implements TupleWriter
 	{
 		if (logger!= null) logger.debug("begin ta of TupleWriter '"+this.getFile()+"' with id: "+ TAId);
 		Long taId= getNewTAId();
-		this.tupleMap.put(taId, new ArrayList<Collection<String>>());
+    
+    transactionToTmpStream.put(taId, createNewTmpStream());
+    
 		return(taId);
 	}
+  
+  private TransactionFile createNewTmpStream()
+  {
+    try
+    {
+      File tmpFile = File.createTempFile("tupelwriter", ".tmp");
+      TransactionFile result = new TransactionFile(
+        tmpFile,
+        new PrintStream(new FileOutputStream(tmpFile), false, getEncoding()));
+      result.getFile().deleteOnExit();
+      
+      return result;
+    }
+    catch(IOException ex)
+    {
+      logger.error("Could not create temporary file", ex);
+    }
+    return null;
+  }
 	
 	@Override
 	public void addTuple(Long TAId, Collection<String> tuple) throws FileNotFoundException
 	{
 //		if (logger!= null) logger.debug("adding tuple for TA: "+ TAId);
-		Collection<Collection<String>> taIdSlot= this.tupleMap.get(TAId);
+    TransactionFile tmpFile = transactionToTmpStream.get(TAId);
 		
-		if (taIdSlot== null)
-			taIdSlot= new ArrayList<Collection<String>>();
-		if (!this.distinct)
-		{//if values shall be stored also if they are duplicates
-			taIdSlot.add(tuple);
-		}//if values shall be stored also if they are duplicates
-		else 
-		{
-			Object[] tupleArray= tuple.toArray();
-			Boolean tupleExists= false;
-			for (Collection<String> existingTuple: taIdSlot)
-			{//walk through all existing tuples
-				Object[] existingTupleArray= existingTuple.toArray();
-				tupleExists= true;
-				for (int i= 0; i< existingTupleArray.length-1; i++)
-				{
-					if (existingTupleArray.length!= tupleArray.length)
-						throw new TupleWriterException("The given tuple has not the expected number of entries.");
-					if (	(existingTupleArray[i]== null) &&
-							(tupleArray[i]==null))
-							;
-					else if (	(	(existingTupleArray[i]== null) &&
-									(tupleArray[i]!=null)) ||
-								(	(existingTupleArray[i]!= null) &&
-									(tupleArray[i]==null)) ||
-								(!existingTupleArray[i].equals(tupleArray[i])))
-					{//if one entry is not equal, the tuple is not equal 
-						tupleExists= false;
-						break;
-					}//if one entry is not equal, the tuple is not equal
-				}
-				if (tupleExists)
-					break;
-			}//walk through all existing tuples
-			if (!tupleExists)
-			{	
-				taIdSlot.add(tuple);
-			}	
-		}
+		if (tmpFile== null)
+    {
+      tmpFile = createNewTmpStream();
+    }
+    
+    printTupelToStream(tmpFile.stream, tuple);
+
 	}
 	
 	@Override
@@ -182,82 +169,84 @@ public class TmpFileTupleWriterImpl implements TupleWriter
 			throw new TupleWriterException("Cannot commit an empty transaction id for TupleWriter controlling file '"+this.getFile()+"'.");
 		}
 		if (logger!= null) logger.debug("commiting ta of TupleWriter '"+this.getFile()+"' with id: "+ TAId);
-		if (this.tupleMap.containsKey(TAId))
-		{
-			this.flush(TAId);
-		}
+    copyToRealFile(TAId);
+    TransactionFile tmp = transactionToTmpStream.remove(TAId);
+    if(tmp != null)
+    {
+      tmp.file.delete();
+    }
 	}
 	
 	@Override
 	public void abortTA(Long TAId) 
 	{
 		if (logger!= null) logger.debug("aborting ta with id: "+ TAId);
-		this.tupleMap.remove(TAId);
+		TransactionFile tmp = transactionToTmpStream.remove(TAId);
+    if(tmp != null)
+    {
+      tmp.file.delete();
+    }
+	}
+  
+  private void printTupelToStream(PrintStream stream, Collection<String> tuple)
+  {
+    StringBuilder tupleAsString= new StringBuilder();
+    int i = 0;
+    for (String att : tuple)
+    {
+      // don't escape if attribute is NULL
+      if (this.escapeCharacters && att != null)
+      { // if escaping should be done
+        StringBuilder escaped = new StringBuilder();
+        for (char chr : att.toCharArray())
+        { // for every char in the atring
+          String escapeString = this.charEscapeTable.get(chr);
+          if (escapeString != null)
+          { // if there is some escape sequence
+            escaped.append(escapeString);
+          }
+          else
+          {
+            escaped.append(chr);
+          }
+        }
+        tupleAsString.append(escaped.toString());
+      }
+      else
+      { // if NO escaping should be done
+        tupleAsString.append(att);
+      }
 
-	}
-	
-	private void flush(Long TAId) throws FileNotFoundException
-	{	
-		if (logger!= null) 
-			logger.debug("flushing all tuples of tupleWriter '"+this.getFile().getName()+"' which belong to TA with id: "+ TAId);
-		if (outFile== null) throw new FileNotFoundException("Error(TupleWriter): The datasource is empty.");
-		try 
-		{
-			
-			writerLock.lock();
-			
-			StringBuilder tuples= new StringBuilder();
-			//zu schreibende tuple ermitteln
-			Collection<Collection<String>> printableTuples= this.tupleMap.get(TAId);
-			for(Collection<String> tuple: printableTuples)
-			{
-				int i= 0;
-				for (String att: tuple)
-				{
-					// don't escape if attribute is NULL
-					if (this.escapeCharacters && att != null)
-					{ // if escaping should be done
-						StringBuilder escaped = new StringBuilder();
-						for (char chr : att.toCharArray())
-						{ // for every char in the atring
-							String escapeString = this.charEscapeTable.get(chr);
-							if (escapeString != null)
-							{ // if there is some escape sequence
-								escaped.append(escapeString);
-							} 
-							else 
-							{
-								escaped.append(chr);
-							}
-						}
-						tuples.append(escaped.toString());
-					} 
-					else 
-					{ // if NO escaping should be done
-						tuples.append(att);
-					}
-					
-					i++;
-					if (i < tuple.size())
-						tuples.append(this.getSeperator());
-				}
-				tuples.append("\n");
-			}
-			
-			if (this.oStream== null)
-				oStream= new PrintStream(new FileOutputStream(this.outFile), true, this.encoding);
-			this.oStream.print(tuples.toString());
-			this.oStream.flush();
-			this.tupleMap.remove(TAId);
-		}
-		catch (RuntimeException e)
-			{ throw new TupleWriterException("Cannot commit ta, because writing to file does not worked. ", e);}
-		catch (UnsupportedEncodingException e)
-			{ throw new TupleWriterException("Cannot commit ta, because writing to file does not worked. ", e); }
-		finally	{
-			writerLock.unlock();
-		}
-	}
+      i++;
+      if (i < tuple.size())
+      {
+        tupleAsString.append(this.getSeperator());
+      }
+    }
+    tupleAsString.append("\n");
+    stream.print(tupleAsString.toString());
+  }
+  
+  private void copyToRealFile(Long TAId)
+  { 
+    TransactionFile tmp = transactionToTmpStream.get(TAId);
+    if(tmp != null)
+    {
+      writerLock.lock();
+      try(OutputStream out = Files.newOutputStream(outFile.toPath(), 
+            StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+
+        Files.copy(tmp.getFile().toPath(), out);
+      }
+      catch (IOException ex) {
+        logger.error("Could not copy transaction file to output file", ex);
+      }
+      finally
+      {
+        writerLock.unlock();
+      }
+    }
+  }
 	
 // ----------------------------- End TA-Management -----------------------------
 	
@@ -335,28 +324,43 @@ public class TmpFileTupleWriterImpl implements TupleWriter
 		return(this.sperator);
 	}
 	
-	public void finalize()
-	{
-		if ((this.tupleMap!= null) && (!this.tupleMap.isEmpty()))
-		{
-			if (logger!= null) logger.warn("Warning(TupleWriter): Not all TAs are comitted or aborted. There remains "+this.tupleMap.size()+" TAs.");
-		}
-		this.oStream.close();
-	}
-
 	/**
 	 * if values shall be stored also if they are duplicates
 	 */
-	private Boolean distinct= false;
 	@Override
 	public Boolean isDistinct() {
-		return(this.distinct);
+		return false;
 	}
 
 	@Override
 	public void setDistinct(Boolean distinct) 
 	{
-		if (distinct!= null)
-			this.distinct= distinct;
+    if(distinct != null && distinct == true)
+    {
+      throw new IllegalArgumentException("This implementation of a tuple "
+        + "writer does not support checking for distinct values");
+    }
 	}
+  
+  public static class TransactionFile
+  {
+    private File file;
+    private PrintStream stream;
+
+    public TransactionFile(File file, PrintStream stream)
+    {
+      this.file = file;
+      this.stream = stream;
+    }
+
+    public File getFile()
+    {
+      return file;
+    }
+    
+    public PrintStream getStream()
+    {
+      return stream;
+    }
+  }
 }
