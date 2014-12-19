@@ -64,15 +64,26 @@ public class TupleConnectorFactoryImpl implements TupleConnectorFactory
 		return false;
 	}
 	
-	/**
-	 * Returns a new TupleWriter-object.
-	 * @return a new TupleWriter-object
-	 */
+  @Override
 	public TupleWriter createTupleWriter()
 	{
-		TupleWriter tupleWriter= new TupleWriterImpl();
-		return(tupleWriter);
+		return createTupleWriter(false);
 	}
+
+  @Override
+  public TupleWriter createTupleWriter(boolean saveMemory)
+  {
+    if(saveMemory)
+    {
+      return new TmpFileTupleWriterImpl();
+    }
+    else
+    {
+      return new TupleWriterImpl();
+    }
+  }
+  
+  
 
 	@Override
 	public TupleReader createTupleReader() 
