@@ -289,7 +289,15 @@ public class TmpFileTupleWriterImpl implements TupleWriter
 			throw new TupleWriterException("Cannot set the given file, because it has no parent folder: "+out+".");
 		if (!out.getParentFile().exists())
 			out.getParentFile().mkdirs();
-		
+    
+    // delete any old file: since we are only appending from now on this is important
+    if(out.exists())
+    {
+      if(!out.delete())
+      {
+        logger.error("Could not delete existing output file");
+      }
+    }
 		this.outFile= out;
 	}
 	
