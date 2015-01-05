@@ -154,11 +154,14 @@ public class TmpFileTupleWriterImpl implements TupleWriter
 		
 		if (tmpFile== null)
     {
-      tmpFile = createNewTmpStream();
+      TransactionFile internalTmpFile = createNewTmpStream();
+      printTupelToStream(internalTmpFile.stream, tuple);
+      internalTmpFile.stream.close();
     }
-    
-    printTupelToStream(tmpFile.stream, tuple);
-
+    else
+    {
+      printTupelToStream(tmpFile.stream, tuple);
+    }
 	}
 	
 	@Override
@@ -173,6 +176,7 @@ public class TmpFileTupleWriterImpl implements TupleWriter
     TransactionFile tmp = transactionToTmpStream.remove(TAId);
     if(tmp != null)
     {
+      tmp.stream.close();
       tmp.file.delete();
     }
 	}
@@ -184,6 +188,7 @@ public class TmpFileTupleWriterImpl implements TupleWriter
 		TransactionFile tmp = transactionToTmpStream.remove(TAId);
     if(tmp != null)
     {
+      tmp.stream.close();
       tmp.file.delete();
     }
 	}
