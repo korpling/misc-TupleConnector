@@ -300,7 +300,19 @@ public class TmpFileTupleWriterImpl implements TupleWriter
     {
       if(!out.delete())
       {
-        logger.error("Could not delete existing output file");
+        logger.error("Could not delete existing output file " + out.getAbsolutePath());
+      }
+      try
+      {
+        // create a new empty file
+        if(!out.createNewFile())
+        {
+          logger.error("Could create new empty output file " + out.getAbsolutePath());
+        }
+      }
+      catch (IOException ex)
+      {
+        logger.error("Could create new empty output file " + out.getAbsolutePath(), ex);
       }
     }
 		this.outFile= out;
