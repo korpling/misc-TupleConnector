@@ -28,6 +28,13 @@ public interface TupleConnectorFactory
 	 * @return a new TupleWriter-object
 	 */
 	public TupleWriter createTupleWriter();
+  
+  /**
+	 * Returns a new TupleWriter-object.
+   * @param saveMemory If true choose a memory saving implementation
+	 * @return a new TupleWriter-object
+	 */
+	public TupleWriter createTupleWriter(boolean saveMemory);
 	
 	/**
 	 * Returns a new TupleReader-object.
