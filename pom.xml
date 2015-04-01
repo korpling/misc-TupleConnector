@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.hu_berlin.german.korpling.saltnpepper</groupId>
 	<artifactId>misc-TupleConnector</artifactId>
-	<version>1.1.5-SNAPSHOT</version>
+	<version>1.2.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<licenses>
 		<license>
@@ -13,6 +13,7 @@
 		</license>
 	</licenses>
 	<properties>
+		<maven-release-plugin.version>2.1</maven-release-plugin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<component.descriptor.name>serviceComponents.xml</component.descriptor.name>
 		<bundle.file>${project.groupId}.${project.artifactId}_${project.version}.jar</bundle.file>
@@ -54,7 +55,6 @@
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.osgi.core</artifactId>
 			<version>1.4.0</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -63,9 +63,14 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.common</artifactId>
+			<version>2.6.0.v20100614-1136</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -73,7 +78,7 @@
 			<!-- start: Plugin for automatic releasing -->
 			<plugin>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.1</version>
+				<version>${maven-release-plugin.version}</version>
 				<executions>
 					<execution>
 						<id>default</id>
@@ -170,4 +175,5 @@
 		<finalName>${project.groupId}.${project.artifactId}_${project.version}</finalName>
 	</build>
 	<name>${project.groupId}.${project.artifactId}</name>
+	>>>>>>> refs/heads/develop
 </project>
