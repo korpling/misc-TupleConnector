@@ -175,5 +175,4 @@
 		<finalName>${project.groupId}.${project.artifactId}_${project.version}</finalName>
 	</build>
 	<name>${project.groupId}.${project.artifactId}</name>
-	>>>>>>> refs/heads/develop
 </project>
