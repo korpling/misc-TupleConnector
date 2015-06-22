@@ -20,6 +20,5 @@ inside the folders plugins or lib.
 This project includes:
   de.hu_berlin.german.korpling.saltnpepper.misc-TupleConnector under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
-  OSGi R4 Core Bundle under The Apache Software License, Version 2.0
   SLF4J API Module under MIT License
 
